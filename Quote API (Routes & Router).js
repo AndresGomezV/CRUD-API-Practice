@@ -37,7 +37,7 @@ quotesRouter.get('/', (req, res, next) => {
       res.send({ quotes });
     }
   });
-  
+
   quotesRouter.post("/", (req, res, next) => {
     // Extraer el texto de la cita y el autor de los parámetros de la consulta
     const addQuote = req.query.quote;
@@ -89,4 +89,26 @@ quotesRouter.put("/:id", (req, res, next) => {
 
   // Devolver un estado 200 y la cita actualizada en la respuesta
   res.status(200).send({ quote: quotes[quoteIndex] });
+});
+
+
+quotesRouter.delete("/:id", (req, res, next) => {
+  // Convertir el parámetro `id` de la ruta en un número, ya que puede ser un string
+  const quoteId = Number(req.params.id);
+
+  // Usar la función `getIndexById` para encontrar el índice de la cita en el array de citas
+  const quoteIndex = getIndexById(quotes, quoteId);
+
+  // Comprobar si la cita no fue encontrada (si `quoteIndex` es -1)
+  if (quoteIndex === -1) {
+    // Devolver un estado 404 (no encontrado) si no existe una cita con el ID proporcionado
+    return res.status(404).send({ error: "Quote not found" });
+  } else {
+    // Si la cita fue encontrada, eliminarla usando `splice`
+    // `splice(quoteIndex, 1)` elimina el elemento en la posición `quoteIndex`
+    quotes.splice(quoteIndex, 1);
+
+    // Devolver un estado 204 (sin contenido) para indicar que la cita fue eliminada exitosamente
+    res.status(204).send();
+  }
 });
