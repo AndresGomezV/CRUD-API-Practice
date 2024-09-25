@@ -37,17 +37,56 @@ quotesRouter.get('/', (req, res, next) => {
       res.send({ quotes });
     }
   });
+  
+  quotesRouter.post("/", (req, res, next) => {
+    // Extraer el texto de la cita y el autor de los parámetros de la consulta
+    const addQuote = req.query.quote;
+    const addAuthor = req.query.person;
+  
+    // Comprobar si se proporcionaron tanto la cita como el autor
+    if (!addQuote || !addAuthor) {
+      // Si falta alguno de los dos, devolver un error 400 (solicitud incorrecta)
+      return res.status(400).send({ error: "No quote/author provided" });
+    } else {
+      // Si ambos parámetros están presentes, crear un nuevo objeto de cita
+      const newQuote = { quote: addQuote, person: addAuthor };
+  
+      // Agregar la nueva cita al array de citas
+      quotes.push(newQuote);
+  
+      // Devolver un estado 201 (creado) y enviar el nuevo objeto de cita en la respuesta
+      res.status(201).send({ quote: newQuote });
+    }
+  });
+  
 
-quotesRouter.post("/", (req, res, next) => {
-  const addQuote = req.query.quote;
-  const addAuthor = req.query.person;
-  if (!addQuote || !addAuthor) {
-    res.status(400).send({ error: "No quote/author provided" });
-  } else {
-    const newQuote = { quote: addQuote, person: addAuthor };
-    quotes.push(newQuote);
-    res.status(201).send({ quote: newQuote });
-  }
+quotesRouter.put("/:id", (req, res, next) => {
+  // Obtener el ID de la cita a actualizar desde los parámetros de la ruta
+  const quoteId = req.params.id;
+
+  // Extraer los nuevos valores de la cita y del autor desde los parámetros de la consulta
+  const updatedQuote = req.query.quote;
+  const updatedAuthor = req.query.person;
+
+  // Usar la función helper getIndexById para encontrar el índice de la cita en el array
+  const quoteIndex = getIndexById(quotes, quoteId);
+  
+  // Comprobar si el índice es -1, lo que significa que no se encontró la cita
+  if (quoteIndex === -1) {
+    // Devolver un error 404 si la cita no fue encontrada
+    return res.status(404).send({ error: "Quote not found" });
+  } 
+  
+  // Verificar si se proporcionaron los nuevos valores para la cita y el autor
+  if (!updatedQuote || !updatedAuthor) {
+    // Devolver un error 400 si faltan los parámetros necesarios
+    return res.status(400).send({ error: "Missing quote/author information" });
+  } 
+  
+  // Si ambos valores son válidos, proceder a actualizar la cita
+  quotes[quoteIndex].quote = updatedQuote; // Actualizar el texto de la cita
+  quotes[quoteIndex].person = updatedAuthor; // Actualizar el autor de la cita
+
+  // Devolver un estado 200 y la cita actualizada en la respuesta
+  res.status(200).send({ quote: quotes[quoteIndex] });
 });
-
-
